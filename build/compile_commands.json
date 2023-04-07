@@ -1,0 +1,14 @@
+[
+{
+  "directory": "D:/Projects/PixelDancer-Vulkan/build",
+  "command": "D:\\LLVM\\bin\\clang++.exe -IC:/VulkanSDK/1.3.231.1/Include -ID:/Projects/PixelDancer-Vulkan/Include -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -o CMakeFiles\\PixelDancer-Vulkan.dir\\main.cpp.obj -c D:\\Projects\\PixelDancer-Vulkan\\main.cpp",
+  "file": "D:\\Projects\\PixelDancer-Vulkan\\main.cpp",
+  "output": "CMakeFiles\\PixelDancer-Vulkan.dir\\main.cpp.obj"
+},
+{
+  "directory": "D:/Projects/PixelDancer-Vulkan/build",
+  "command": "D:\\LLVM\\bin\\clang++.exe -IC:/VulkanSDK/1.3.231.1/Include -ID:/Projects/PixelDancer-Vulkan/Include -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -o CMakeFiles\\PixelDancer-Vulkan.dir\\Source\\Instance.cpp.obj -c D:\\Projects\\PixelDancer-Vulkan\\Source\\Instance.cpp",
+  "file": "D:\\Projects\\PixelDancer-Vulkan\\Source\\Instance.cpp",
+  "output": "CMakeFiles\\PixelDancer-Vulkan.dir\\Source\\Instance.cpp.obj"
+}
+]

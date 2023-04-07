@@ -1,25 +1,18 @@
-#include "../Include/Instance.h"
+#include "../Include/Instance.hpp"
 
 namespace pxd
 {
-	Instance::~Instance()
+    Instance::~Instance()
 	{
-		vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
-
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
-	void Instance::AddValidationLayer(const char* valLayer)
-	{
-		validationLayers.push_back(valLayer);
-	}
-
-	void Instance::AddExtension(const char* ext)
+    void Instance::AddExtension(const char* ext)
 	{
 		instanceExtensions.push_back(ext);
 	}
 
-	void Instance::CreateInstance()
+    void Instance::CreateInstance()
 	{
 		VkApplicationInfo applicationInfo = {};
 		applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -35,52 +28,21 @@ namespace pxd
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
 		createInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
-#ifdef PXD_VK_ENABLE_VALIDATION_LAYERS
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+        #ifdef PXD_VK_ENABLE_VALIDATION_LAYERS
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
-
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-#else
+        #else
 		createInfo.enabledLayerCount = 0;
 		createInfo.pNext = nullptr;
-#endif
+        #endif
 
 		VK_CHECK(vkCreateInstance(&createInfo, nullptr, &m_instance));
 	}
 
-	bool Instance::CheckValidationLayer()
-	{
-		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-		std::vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-		bool layerFound = false;
-		for (const char* layerName : validationLayers)
-		{
-			layerFound = false;
-
-			for (const auto& layerProperties : availableLayers)
-			{
-				layerFound = true;
-				break;
-			}
-
-			if (!layerFound) return false;
-		}
-
-		return true;
-	}
-
-	VkInstance* Instance::GetpInstance()
+    VkInstance* Instance::GetpInstance()
 	{
 		return &m_instance;
-	}
-
-	VkDebugUtilsMessengerEXT* Instance::GetpDebugMessenger()
-	{
-		return &m_debugMessenger;
 	}
 }

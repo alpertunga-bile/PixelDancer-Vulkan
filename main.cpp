@@ -1,9 +1,10 @@
-#include "Include/Common.h"
 #include <iostream>
+#include "Include/Instance.hpp"
 
 int main()
 {
-	std::cout << "Hello!!!\n";
+	pxd::Instance instance;
+	instance.CreateInstance();
 
 	return 0;
 }
