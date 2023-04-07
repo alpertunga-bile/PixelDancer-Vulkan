@@ -1,8 +1,0 @@
-# ninja log v5
-12	799	7025974728651720	CMakeFiles/PixelDancer-Vulkan.dir/main.cpp.obj	2e18a365cd247467
-801	907	7025974736532734	PixelDancer-Vulkan.exe	d9cb752d131e2733
-14	708	7025979903439420	CMakeFiles/PixelDancer-Vulkan.dir/Source/Instance.cpp.obj	1146d097d5746031
-9	819	7025979903389794	CMakeFiles/PixelDancer-Vulkan.dir/main.cpp.obj	2e18a365cd247467
-819	931	7025979911495152	PixelDancer-Vulkan.exe	152f651c37a43d06
-13	823	7025980151129172	CMakeFiles/PixelDancer-Vulkan.dir/main.cpp.obj	2e18a365cd247467
-824	937	7025980159233269	PixelDancer-Vulkan.exe	152f651c37a43d06
