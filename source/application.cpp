@@ -150,13 +150,11 @@ namespace pxdvk
 		rpbi.clearValueCount = 1;
 		rpbi.pClearValues = &clear_value;
 
-		vkCmdBeginRenderPass(
-			m_commandpool [ "main" ].get(), &rpbi, VK_SUBPASS_CONTENTS_INLINE
-		);
+		m_commandpool["main"].begin_renderpass(&rpbi);
 
-		vkCmdEndRenderPass( m_commandpool [ "main" ].get() );
+		m_commandpool["main"].end_renderpass();
 
-		VK_CHECK( vkEndCommandBuffer( m_commandpool [ "main" ].get() ) );
+		m_commandpool["main"].end_recording();
 
 		VkSubmitInfo si = {};
 		si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -201,7 +199,7 @@ namespace pxdvk
 
 		m_render_fence.destroy();
 		m_present_semaphore.destroy();
-		m_render_fence.destroy();
+		m_render_semaphore.destroy();
 
 		for ( Framebuffer fb : m_swapchain_framebuffers )
 		{

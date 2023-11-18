@@ -13,6 +13,10 @@ namespace pxdvk
 		void reset();
 
 		void begin_recording( VkCommandBufferUsageFlags usage_flags, VkCommandBufferInheritanceInfo* pInheritance = nullptr );
+		void end_recording();
+
+		void begin_renderpass(VkRenderPassBeginInfo* rpbi, VkSubpassContents subpass_contents = VK_SUBPASS_CONTENTS_INLINE);
+		void end_renderpass();
 
 		VkCommandBuffer get()
 		{

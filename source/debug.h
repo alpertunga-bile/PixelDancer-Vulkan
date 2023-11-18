@@ -48,7 +48,7 @@ inline void vk_check( VkResult result, const char* file, int line )
 	if ( result == VK_SUCCESS )
 	{
 #if defined (_DEBUG)
-		LOG_SUCCESS( get_output_string(file, line).c_str() );
+		// LOG_SUCCESS( get_output_string(file, line).c_str() );
 #endif
 		return;
 	}

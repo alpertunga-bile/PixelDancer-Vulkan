@@ -40,4 +40,23 @@ namespace pxdvk
 			vkBeginCommandBuffer( m_commandbuffer, &cbbi )
 		);
 	}
+
+	void CommandBuffer::end_recording()
+	{
+		vkEndCommandBuffer(m_commandbuffer);
+	}
+
+	void CommandBuffer::begin_renderpass(VkRenderPassBeginInfo* rpbi, VkSubpassContents subpass_contents)
+	{
+		vkCmdBeginRenderPass(
+			m_commandbuffer,
+			rpbi,
+			subpass_contents
+		);
+	}
+
+	void CommandBuffer::end_renderpass()
+	{
+		vkCmdEndRenderPass(m_commandbuffer);
+	}
 }
