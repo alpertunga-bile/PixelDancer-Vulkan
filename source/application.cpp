@@ -77,6 +77,7 @@ namespace pxdvk
 		PxdCommandBufferInfo main_cmd_info = {};
 		main_cmd_info.name = main_commandbuffer_name;
 		main_cmd_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		
 		cmdbuffer_infos.push_back( main_cmd_info );
 
 		m_commandpool.allocate( cmdbuffer_infos );
@@ -111,16 +112,7 @@ namespace pxdvk
 		m_render_fence.wait();
 		m_render_fence.reset();
 
-		uint32_t swapchain_image_index;
-		VK_CHECK(
-			vkAcquireNextImageKHR(
-				m_nexus,
-				m_swapchain,
-				1000000000,
-				m_present_semaphore.get(),
-				nullptr,
-				&swapchain_image_index )
-		);
+		uint32_t swapchain_image_index = m_swapchain.get_image_index(1, m_present_semaphore.get());
 
 		m_commandpool [main_commandbuffer_name].reset();
 		m_commandpool [main_commandbuffer_name].begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
@@ -134,8 +126,7 @@ namespace pxdvk
 		rpbi.pNext = nullptr;
 
 		rpbi.renderPass = m_renderpass.get();
-		rpbi.renderArea.offset.x = 0;
-		rpbi.renderArea.offset.y = 0;
+		rpbi.renderArea.offset = { .x = 0, .y = 0 };
 		rpbi.renderArea.extent = { .width = 1280, .height = 720 };
 		rpbi.framebuffer = m_swapchain.get_framebuffer(swapchain_image_index);
 

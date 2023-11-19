@@ -79,6 +79,25 @@ namespace pxdvk
 			return m_framebuffers[index].get();
 		}
 
+		uint32_t get_image_index(int timeout_seconds, VkSemaphore semaphore, VkFence fence = nullptr)
+		{
+			uint32_t image_index;
+			uint64_t timeout_nanoseconds = timeout_seconds * 1000000000;
+
+			VK_CHECK(
+				vkAcquireNextImageKHR(
+					m_device,
+					m_swapchain,
+					timeout_nanoseconds,
+					semaphore,
+					fence,
+					&image_index
+				)
+			);
+
+			return image_index;
+		}
+
 	private:
 		VkSurfaceFormatKHR choose_surface_format( VkSurfaceFormatKHR desired_surface_format, std::vector<VkSurfaceFormatKHR>& formats );
 		VkPresentModeKHR choose_present_mode( std::vector<VkPresentModeKHR>& present_modes );
