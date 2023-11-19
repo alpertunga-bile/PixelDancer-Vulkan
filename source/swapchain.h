@@ -1,6 +1,7 @@
 #pragma once
 
 #include "image.h"
+#include "framebuffer.h"
 
 #include <vector>
 
@@ -25,6 +26,8 @@ namespace pxdvk
 		void init( PxdSwapchainInfo info );
 
 		void destroy();
+
+		void create_framebuffers(PxdFramebufferInfo fbi);
 
 		operator VkSwapchainKHR() const
 		{
@@ -66,6 +69,16 @@ namespace pxdvk
 			return m_swapchain_images [ index ];
 		}
 
+		VkFramebuffer get_framebuffer(int index)
+		{
+			if (index >= m_swapchain_image_count)
+			{
+				return VkFramebuffer();
+			}
+
+			return m_framebuffers[index].get();
+		}
+
 	private:
 		VkSurfaceFormatKHR choose_surface_format( VkSurfaceFormatKHR desired_surface_format, std::vector<VkSurfaceFormatKHR>& formats );
 		VkPresentModeKHR choose_present_mode( std::vector<VkPresentModeKHR>& present_modes );
@@ -84,5 +97,7 @@ namespace pxdvk
 		VkSurfaceFormatKHR m_surface_format;
 		VkPresentModeKHR m_present_mode;
 		uint32_t m_swapchain_image_count;
+
+		std::vector<Framebuffer> m_framebuffers;
 	};
 }

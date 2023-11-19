@@ -27,7 +27,7 @@ namespace pxdvk
 		nexus_create_info.enable_raytracing = false;
 
 		PxdQueueInfo queue_info;
-		queue_info.name = "graphics";
+		queue_info.name = m_graphics_queue_name;
 		queue_info.queue_index = 0;
 		queue_info.flag = VK_QUEUE_GRAPHICS_BIT;
 		queue_info.priority = 1.0f;
@@ -43,8 +43,7 @@ namespace pxdvk
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK SWAPCHAIN
 
-		m_graphics_family = Nexus::get_queue_family( VK_QUEUE_GRAPHICS_BIT, m_nexus );
-		m_graphics_queue = m_nexus.get_queue( "graphics" );
+		m_graphics_queue = m_nexus.get_queue_class(m_graphics_queue_name);
 
 		int width, height;
 		glfwGetWindowSize( window, &width, &height );
@@ -52,7 +51,7 @@ namespace pxdvk
 		PxdSwapchainInfo swapchain_info;
 		swapchain_info.device = m_nexus;
 		swapchain_info.physicalDevice = m_nexus;
-		swapchain_info.graphics_family = m_graphics_family;
+		swapchain_info.graphics_family = m_graphics_queue.family_index;
 		swapchain_info.width = width;
 		swapchain_info.height = height;
 		swapchain_info.surface = m_nexus.get_surface();
@@ -66,7 +65,7 @@ namespace pxdvk
 		PxdCommandPoolInfo pool_info = {};
 		pool_info.device = m_nexus;
 		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		pool_info.queue_family = m_graphics_family;
+		pool_info.queue_family = m_graphics_queue.family_index;
 
 		m_commandpool.init( pool_info );
 
@@ -74,8 +73,9 @@ namespace pxdvk
 		// PXDVK CommandBuffer
 
 		std::vector<PxdCommandBufferInfo> cmdbuffer_infos;
+
 		PxdCommandBufferInfo main_cmd_info = {};
-		main_cmd_info.name = "main";
+		main_cmd_info.name = main_commandbuffer_name;
 		main_cmd_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdbuffer_infos.push_back( main_cmd_info );
 
@@ -96,15 +96,7 @@ namespace pxdvk
 		fbinfo.device = m_nexus;
 		fbinfo.renderpass = m_renderpass.get();
 
-		m_swapchain_framebuffers.resize( m_swapchain.get_image_count() );
-
-		for ( int i = 0; i < m_swapchain.get_image_count(); i++ )
-		{
-			fbinfo.image_views.clear();
-			fbinfo.image_views.push_back( m_swapchain.get_img_view( i ) );
-
-			m_swapchain_framebuffers [ i ].init( fbinfo );
-		}
+		m_swapchain.create_framebuffers(fbinfo);
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Synchronization
@@ -122,7 +114,7 @@ namespace pxdvk
 		uint32_t swapchain_image_index;
 		VK_CHECK(
 			vkAcquireNextImageKHR(
-				m_nexus, 
+				m_nexus,
 				m_swapchain,
 				1000000000,
 				m_present_semaphore.get(),
@@ -130,11 +122,11 @@ namespace pxdvk
 				&swapchain_image_index )
 		);
 
-		m_commandpool [ "main" ].reset();
-		m_commandpool [ "main" ].begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
+		m_commandpool [main_commandbuffer_name].reset();
+		m_commandpool [main_commandbuffer_name].begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
 		VkClearValue clear_value;
-		float flash = std::abs( std::sin( frame_number / 120.0f ) );
+		float flash = std::abs( std::sin( frame_number / 360.0f ) );
 		clear_value.color = { {0.0f, 0.0f, flash, 1.0f} };
 
 		VkRenderPassBeginInfo rpbi = {};
@@ -145,52 +137,32 @@ namespace pxdvk
 		rpbi.renderArea.offset.x = 0;
 		rpbi.renderArea.offset.y = 0;
 		rpbi.renderArea.extent = { .width = 1280, .height = 720 };
-		rpbi.framebuffer = m_swapchain_framebuffers [ swapchain_image_index ].get();
+		rpbi.framebuffer = m_swapchain.get_framebuffer(swapchain_image_index);
 
 		rpbi.clearValueCount = 1;
 		rpbi.pClearValues = &clear_value;
 
-		m_commandpool["main"].begin_renderpass(&rpbi);
+		m_commandpool[main_commandbuffer_name].begin_renderpass(&rpbi);
 
-		m_commandpool["main"].end_renderpass();
+		m_commandpool[main_commandbuffer_name].end_renderpass();
 
-		m_commandpool["main"].end_recording();
+		m_commandpool[main_commandbuffer_name].end_recording();
 
-		VkSubmitInfo si = {};
-		si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		si.pNext = nullptr;
-		
-		VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		si.pWaitDstStageMask = &wait_stage;
+		PxdQueueSubmitInfo pqsi = {};
+		pqsi.stage_flag = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		pqsi.wait_semaphores.push_back(m_present_semaphore.get());
+		pqsi.signal_semaphores.push_back(m_render_semaphore.get());
+		pqsi.commandbuffers.push_back(m_commandpool[main_commandbuffer_name].get());
+		pqsi.fence = m_render_fence.get();
 
-		si.waitSemaphoreCount = 1;
-		si.pWaitSemaphores = m_present_semaphore.get_ptr();
+		m_graphics_queue.submit(pqsi);
 
-		si.signalSemaphoreCount = 1;
-		si.pSignalSemaphores = m_render_semaphore.get_ptr();
+		PxdQueuePresentInfo pqpi = {};
+		pqpi.swapchains.push_back(m_swapchain);
+		pqpi.wait_semaphores.push_back(m_render_semaphore.get());
+		pqpi.swapchain_image_index = swapchain_image_index;
 
-		si.commandBufferCount = 1;
-		si.pCommandBuffers = m_commandpool [ "main" ].get_ptr();
-
-		VK_CHECK(
-			vkQueueSubmit( m_graphics_queue, 1, &si, m_render_fence.get() )
-		);
-
-		VkPresentInfoKHR pi = {};
-		pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		pi.pNext = nullptr;
-
-		pi.pSwapchains = m_swapchain.get_ptr();
-		pi.swapchainCount = 1;
-
-		pi.pWaitSemaphores = m_render_semaphore.get_ptr();
-		pi.waitSemaphoreCount = 1;
-
-		pi.pImageIndices = &swapchain_image_index;
-
-		VK_CHECK(
-			vkQueuePresentKHR( m_graphics_queue, &pi )
-		);
+		m_graphics_queue.present(pqpi);
 	}
 
 	void Application::destroy()
@@ -200,11 +172,6 @@ namespace pxdvk
 		m_render_fence.destroy();
 		m_present_semaphore.destroy();
 		m_render_semaphore.destroy();
-
-		for ( Framebuffer fb : m_swapchain_framebuffers )
-		{
-			fb.destroy();
-		}
 
 		m_renderpass.destroy();
 		m_commandpool.destroy();

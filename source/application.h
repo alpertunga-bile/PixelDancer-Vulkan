@@ -20,14 +20,13 @@ namespace pxdvk
 
 	protected:
 		Nexus m_nexus;
-		
-		uint32_t m_graphics_family;
-		VkQueue m_graphics_queue;
+		Queue m_graphics_queue;
+		std::string m_graphics_queue_name = "graphics";
 
 		Swapchain m_swapchain;
-		std::vector<Framebuffer> m_swapchain_framebuffers;
 
 		CommandPool m_commandpool;
+		std::string main_commandbuffer_name = "main";
 
 		Renderpass m_renderpass;
 

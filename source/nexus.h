@@ -30,12 +30,69 @@ namespace pxdvk
 		}
 	};
 
-	struct PxdQueue
+	struct PxdQueueSubmitInfo
+	{
+		VkPipelineStageFlags stage_flag;
+		std::vector<VkSemaphore> wait_semaphores;
+		std::vector<VkSemaphore> signal_semaphores;
+		std::vector<VkCommandBuffer> commandbuffers;
+		VkFence fence;
+	};
+
+	struct PxdQueuePresentInfo
+	{
+		std::vector<VkSwapchainKHR> swapchains;
+		std::vector<VkSemaphore> wait_semaphores;
+		uint32_t swapchain_image_index;
+	};
+
+	struct Queue
 	{
 		VkQueueFlags flag;
 		uint32_t family_index;
 		uint32_t queue_index;
 		VkQueue queue;
+
+		void submit(PxdQueueSubmitInfo pqsi)
+		{
+				VkSubmitInfo si = {};
+				si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				si.pNext = nullptr;
+
+				si.pWaitDstStageMask = &pqsi.stage_flag;
+
+				si.waitSemaphoreCount = pqsi.wait_semaphores.size();
+				si.pWaitSemaphores = pqsi.wait_semaphores.data();
+
+				si.signalSemaphoreCount = pqsi.signal_semaphores.size();
+				si.pSignalSemaphores = pqsi.signal_semaphores.data();
+
+				si.commandBufferCount = pqsi.commandbuffers.size();
+				si.pCommandBuffers = pqsi.commandbuffers.data();
+
+			VK_CHECK(
+				vkQueueSubmit(queue, 1, &si, pqsi.fence)
+			);
+		}
+
+		void present(PxdQueuePresentInfo pqpi)
+		{
+			VkPresentInfoKHR pi = {};
+			pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			pi.pNext = nullptr;
+
+			pi.swapchainCount = pqpi.swapchains.size();
+			pi.pSwapchains = pqpi.swapchains.data();
+
+			pi.waitSemaphoreCount = pqpi.wait_semaphores.size();
+			pi.pWaitSemaphores = pqpi.wait_semaphores.data();
+
+			pi.pImageIndices = &pqpi.swapchain_image_index;
+
+			VK_CHECK(
+				vkQueuePresentKHR(queue, &pi)
+			);
+		}
 	};
 
 	class Nexus
@@ -50,6 +107,7 @@ namespace pxdvk
 		static uint32_t get_queue_family( VkQueueFlags queue_flag, VkPhysicalDevice physical_device );
 
 		VkQueue get_queue( std::string queue_name );
+		Queue get_queue_class(std::string queue_name);
 
 		void print_physical_device_info();
 
@@ -122,6 +180,6 @@ namespace pxdvk
 
 		// Queue
 		std::vector<VkDeviceQueueCreateInfo> m_queue_create_infos;
-		std::unordered_map<std::string, PxdQueue> m_queue_map;
+		std::unordered_map<std::string, Queue> m_queue_map;
 	};
 }

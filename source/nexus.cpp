@@ -112,6 +112,18 @@ namespace pxdvk
 		return it->second.queue;
 	}
 
+	Queue Nexus::get_queue_class(std::string queue_name)
+	{
+		auto it = m_queue_map.find(queue_name);
+
+		if (it == m_queue_map.end())
+		{
+			return Queue();
+		}
+
+		return it->second;
+	}
+
 	void Nexus::init_instance(const char* app_name, uint32_t api_version)
 	{
 		VkApplicationInfo app_info = {};
@@ -243,7 +255,7 @@ namespace pxdvk
 			}
 		}
 
-		PxdQueue pxd_queue;
+		Queue pxd_queue;
 		pxd_queue.flag = info.flag;
 		pxd_queue.queue = VK_NULL_HANDLE;
 		pxd_queue.family_index = queue_index;

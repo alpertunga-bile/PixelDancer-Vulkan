@@ -24,9 +24,23 @@ namespace pxdvk
 		for ( size_t i = 0; i < m_swapchain_image_count; i++ )
 		{
 			vkDestroyImageView( m_device, m_swapchain_image_views [ i ], nullptr );
+			m_framebuffers[i].destroy();
 		}
 
 		vkDestroySwapchainKHR( m_device, m_swapchain, nullptr );
+	}
+
+	void Swapchain::create_framebuffers(PxdFramebufferInfo fbi)
+	{
+		m_framebuffers.resize(m_swapchain_image_count);
+
+		for (int i = 0; i < m_swapchain_image_count; i++)
+		{
+			fbi.image_views.clear();
+			fbi.image_views.push_back(m_swapchain_image_views[i]);
+
+			m_framebuffers[i].init(fbi);
+		}
 	}
 
 	VkSurfaceFormatKHR Swapchain::choose_surface_format( VkSurfaceFormatKHR desired_surface_format, std::vector<VkSurfaceFormatKHR>& formats )
