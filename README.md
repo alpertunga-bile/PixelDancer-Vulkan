@@ -5,6 +5,7 @@
 
 ## Technologies
 - C++ 20
-- Visual Studio 2022 (Going to add CMake support)
+- Visual Studio 2022
+- CMake
 - GLFW
 - Vulkan SDK
