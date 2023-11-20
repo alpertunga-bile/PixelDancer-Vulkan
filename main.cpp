@@ -1,6 +1,3 @@
-// VulkanLayer.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 
 #include "source/application.h"
@@ -39,6 +36,6 @@ int main()
 
 	app.destroy();
 	glfwTerminate();
-
+	
     return 0;
 }

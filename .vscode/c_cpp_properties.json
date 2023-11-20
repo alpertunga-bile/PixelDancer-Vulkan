@@ -1,17 +1,23 @@
 {
     "env": {
-      "myDefaultIncludePath": ["${workspaceFolder}", "${workspaceFolder}/Include", "${env:VULKAN_SDK}/Include"],
-      "myCompilerPath": "D:/LLVM/bin/clang++.exe"
+        "myDefaultIncludePath": [
+            "${workspaceFolder}",
+            "${env:VULKAN_SDK}/Include"
+        ],
+        "myCompilerPath": "D:/LLVM/bin/clang++.exe"
     },
     "configurations": [
-      {
-        "name": "Win32",
-        "intelliSenseMode": "clang-x64",
-        "includePath": ["${myDefaultIncludePath}"],
-        "compilerPath": "${myCompilerPath}",
-        "cStandard": "c17",
-        "cppStandard": "c++17"
-      }
+        {
+            "name": "Win32",
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "${myDefaultIncludePath}",
+                "${workspaceFolder}/third-party/include"
+            ],
+            "compilerPath": "${myCompilerPath}",
+            "cStandard": "c17",
+            "cppStandard": "c++20"
+        }
     ],
     "version": 4
 }
