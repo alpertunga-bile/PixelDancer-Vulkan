@@ -13,7 +13,7 @@ namespace pxdvk
 			add_queue_info( queue_info );
 		}
 		
-		init_device( create_info.enable_raytracing );
+		init_device( create_info.device_features );
 		init_queues();
 	}
 
@@ -54,13 +54,26 @@ namespace pxdvk
 	{
 		auto it = std::find( m_instance_extensions.begin(), m_instance_extensions.end(), ext );
 
-		if ( it == m_instance_extensions.end() )
+		if ( it != m_instance_extensions.end() )
 		{
 			LOG_INFO( std::format( "{} instance extension is already included", ext ).c_str() );
 			return;
 		}
 
 		m_instance_extensions.push_back( ext );
+	}
+
+	void Nexus::add_device_extension( const char* ext )
+	{
+		auto it = std::find( m_device_extensions.begin(), m_device_extensions.end(), ext );
+
+		if ( it != m_device_extensions.end() )
+		{
+			LOG_INFO( std::format( "{} instance extension is already included", ext ).c_str() );
+			return;
+		}
+
+		m_device_extensions.push_back( ext );
 	}
 
 	void Nexus::remove_instance_extension( const char* ext )
@@ -74,6 +87,19 @@ namespace pxdvk
 		}
 
 		m_instance_extensions.erase( it );
+	}
+
+	void Nexus::remove_device_extension( const char* ext )
+	{
+		auto it = std::find( m_device_extensions.begin(), m_device_extensions.end(), ext );
+
+		if ( it == m_device_extensions.end() )
+		{
+			LOG_INFO( std::format( "{} instance extension is not found", ext ).c_str() );
+			return;
+		}
+
+		m_device_extensions.erase( it );
 	}
 
 	uint32_t Nexus::get_queue_family( VkQueueFlags queue_flag, VkPhysicalDevice physical_device )
@@ -156,6 +182,7 @@ namespace pxdvk
 	
 	void Nexus::init_debugs()
 	{
+#if defined (_DEBUG)
 		VkDebugUtilsMessengerCreateInfoEXT mci = {};
 		mci.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		mci.pNext = nullptr;
@@ -200,6 +227,7 @@ namespace pxdvk
 		{
 			LOG_ERROR( "Failed to create debug report callback" );
 		}
+#endif
 	}
 	
 	void Nexus::init_physical_device( std::function<bool( VkPhysicalDevice )> selector )
@@ -274,40 +302,8 @@ namespace pxdvk
 		m_queue_create_infos.push_back( qci );
 	}
 
-	void Nexus::init_device(bool enable_raytracing)
+	void Nexus::init_device( VkPhysicalDeviceFeatures2& device_features )
 	{
-		VkPhysicalDeviceFeatures2 device_features2 {};
-		
-		if ( enable_raytracing )
-		{
-			m_device_extensions.push_back( VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_KHR_SPIRV_1_4_EXTENSION_NAME );
-			m_device_extensions.push_back( VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME );
-
-			VkPhysicalDeviceBufferDeviceAddressFeatures address_features = {};
-			address_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
-			address_features.bufferDeviceAddress = VK_TRUE;
-
-			VkPhysicalDeviceRayTracingPipelineFeaturesKHR pipeline_features = {};
-			pipeline_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-			pipeline_features.rayTracingPipeline = VK_TRUE;
-			pipeline_features.pNext = &address_features;
-
-			VkPhysicalDeviceAccelerationStructureFeaturesKHR accel_features = {};
-			accel_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-			accel_features.accelerationStructure = VK_TRUE;
-			accel_features.pNext = &pipeline_features;
-
-			device_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-			device_features2.pNext = &accel_features;
-
-			vkGetPhysicalDeviceFeatures2( m_physical_device, &device_features2 );
-		}
-
 		VkDeviceCreateInfo ci = {};
 		ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		ci.pNext = nullptr;
@@ -319,9 +315,11 @@ namespace pxdvk
 		ci.enabledExtensionCount = static_cast< uint32_t >( m_device_extensions.size() );
 		ci.ppEnabledExtensionNames = m_device_extensions.data();
 
-		if ( enable_raytracing )
+		if ( device_features.pNext != nullptr )
 		{
-			ci.pNext = &device_features2;
+			vkGetPhysicalDeviceFeatures2( m_physical_device, &device_features );
+
+			ci.pNext = &device_features;
 			ci.pEnabledFeatures = nullptr;
 		}
 		else

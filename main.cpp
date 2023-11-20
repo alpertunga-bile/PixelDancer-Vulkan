@@ -2,6 +2,8 @@
 
 #include "source/application.h"
 
+#include "source/shader.h"
+
 int main()
 {
 	uint32_t width = 1280;
@@ -15,7 +17,7 @@ int main()
 	GLFWwindow* window = glfwCreateWindow( width, height, "PXD Vulkan", nullptr, nullptr );
 
 	pxdvk::Application app;
-	app.initialize( window );
+	app.initialize( window, pxdvk::PxdAppType::PXD_AT_RASTERIZER );
 
 	int frame_number = 0;
 
@@ -36,6 +38,6 @@ int main()
 
 	app.destroy();
 	glfwTerminate();
-	
+
     return 0;
 }

@@ -21,8 +21,8 @@ namespace pxdvk
 		}
 
 	private:
-		VkDevice m_device;
-		VkSemaphore m_semaphore;
+		VkDevice m_device = VK_NULL_HANDLE;
+		VkSemaphore m_semaphore = VK_NULL_HANDLE;
 	};
 
 	class Fence
@@ -45,7 +45,7 @@ namespace pxdvk
 		}
 
 	private:
-		VkDevice m_device;
-		VkFence m_fence;
+		VkDevice m_device = VK_NULL_HANDLE;
+		VkFence m_fence = VK_NULL_HANDLE;
 	};
 }

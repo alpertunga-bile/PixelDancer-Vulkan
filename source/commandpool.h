@@ -46,7 +46,6 @@ namespace pxdvk
 			return it->second;
 		}
 
-	private:
 		VkCommandPool get() const
 		{
 			return m_commandpool;
@@ -58,8 +57,8 @@ namespace pxdvk
 		}
 
 	private:
-		VkDevice m_device;
-		VkCommandPool m_commandpool;
+		VkDevice m_device = VK_NULL_HANDLE;
+		VkCommandPool m_commandpool = VK_NULL_HANDLE;
 
 		std::unordered_map<std::string, CommandBuffer> m_commandbuffer_map;
 	};

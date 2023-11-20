@@ -8,10 +8,10 @@ namespace pxdvk
 {
 	struct PxdFramebufferInfo
 	{
-		VkDevice device;
-		VkRenderPass renderpass;
-		uint32_t width;
-		uint32_t height;
+		VkDevice device = VK_NULL_HANDLE;
+		VkRenderPass renderpass = VK_NULL_HANDLE;
+		uint32_t width = 0;
+		uint32_t height = 0;
 		uint32_t depth = 1;
 		std::vector<VkImageView> image_views;
 	};
@@ -28,8 +28,8 @@ namespace pxdvk
 		}
 
 	private:
-		VkDevice m_device;
+		VkDevice m_device = VK_NULL_HANDLE;
 
-		VkFramebuffer m_framebuffer;
+		VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 	};
 }

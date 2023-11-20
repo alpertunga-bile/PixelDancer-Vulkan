@@ -6,15 +6,24 @@
 #include "renderpass.h"
 #include "framebuffer.h"
 #include "synchronize.h"
+#include "pipeline.h"
 
+#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
 namespace pxdvk
 {
+	enum class PxdAppType
+	{
+		PXD_AT_RASTERIZER,
+		PXD_AT_RAYTRACING,
+		PXD_AT_COMPUTE
+	};
+
 	class Application
 	{
 	public:
-		void initialize(GLFWwindow* window);
+		void initialize(GLFWwindow* window, PxdAppType app_type);
 		void render( uint32_t frame_number );
 		void destroy();
 
@@ -33,5 +42,8 @@ namespace pxdvk
 		Semaphore m_render_semaphore;
 		Semaphore m_present_semaphore;
 		Fence m_render_fence;
+
+		Pipeline m_pipeline;
+		PipelineLayout m_pipeline_layout;
 	};
 }

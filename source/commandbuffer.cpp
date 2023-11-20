@@ -59,4 +59,14 @@ namespace pxdvk
 	{
 		vkCmdEndRenderPass(m_commandbuffer);
 	}
+	
+	void CommandBuffer::bind_pipeline( VkPipelineBindPoint bind_point, VkPipeline pipeline )
+	{
+		vkCmdBindPipeline( m_commandbuffer, bind_point, pipeline );
+	}
+	
+	void CommandBuffer::draw( uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance )
+	{
+		vkCmdDraw( m_commandbuffer, vertex_count, instance_count, first_vertex, first_instance );
+	}
 }

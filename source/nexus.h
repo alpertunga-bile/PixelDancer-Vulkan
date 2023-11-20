@@ -20,14 +20,9 @@ namespace pxdvk
 	{
 		const char* app_name = "PixelDancer-Vulkan";
 		uint32_t api_version = VK_API_VERSION_1_1;
-		bool enable_raytracing = false;
 		std::vector<PxdQueueInfo> queue_infos;
 		std::function<bool( VkPhysicalDevice )> physical_device_selector;
-
-		void add_info( PxdQueueInfo info )
-		{
-			queue_infos.push_back( info );
-		}
+		VkPhysicalDeviceFeatures2 device_features;
 	};
 
 	struct PxdQueueSubmitInfo
@@ -49,9 +44,9 @@ namespace pxdvk
 	struct Queue
 	{
 		VkQueueFlags flag;
-		uint32_t family_index;
-		uint32_t queue_index;
-		VkQueue queue;
+		uint32_t family_index = 0;
+		uint32_t queue_index = 0;
+		VkQueue queue = VK_NULL_HANDLE;
 
 		void submit(PxdQueueSubmitInfo pqsi)
 		{
@@ -102,7 +97,9 @@ namespace pxdvk
 		void destroy();
 
 		void add_instance_extension( const char* ext );
+		void add_device_extension( const char* ext );
 		void remove_instance_extension( const char* ext );
+		void remove_device_extension( const char* ext );
 
 		static uint32_t get_queue_family( VkQueueFlags queue_flag, VkPhysicalDevice physical_device );
 
@@ -111,27 +108,27 @@ namespace pxdvk
 
 		void print_physical_device_info();
 
-		operator VkInstance() const
+		inline operator VkInstance() const
 		{
 			return m_instance;
 		}
 
-		operator VkDevice() const
+		inline operator VkDevice() const
 		{
 			return m_device;
 		}
 
-		operator VkPhysicalDevice() const
+		inline operator VkPhysicalDevice() const
 		{
 			return m_physical_device;
 		}
 
-		VkSurfaceKHR get_surface()
+		inline VkSurfaceKHR get_surface()
 		{
 			return m_surface;
 		}
 
-		VkSurfaceKHR* get_surface_ptr()
+		inline VkSurfaceKHR* get_surface_ptr()
 		{
 			return &m_surface;
 		}
@@ -141,7 +138,7 @@ namespace pxdvk
 		void init_debugs();
 		void init_physical_device(std::function<bool(VkPhysicalDevice)> selector);
 		void add_queue_info( PxdQueueInfo info );
-		void init_device( bool enable_raytracing );
+		void init_device( VkPhysicalDeviceFeatures2& device_features );
 		void init_queues();
 
 	private:

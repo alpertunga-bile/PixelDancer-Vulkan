@@ -16,8 +16,8 @@ namespace pxdvk
 		}
 
 	private:
-		VkDevice m_device;
+		VkDevice m_device = VK_NULL_HANDLE;
 
-		VkRenderPass m_renderpass;
+		VkRenderPass m_renderpass = VK_NULL_HANDLE;
 	};
 }

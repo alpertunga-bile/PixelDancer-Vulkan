@@ -18,6 +18,10 @@ namespace pxdvk
 		void begin_renderpass(VkRenderPassBeginInfo* rpbi, VkSubpassContents subpass_contents = VK_SUBPASS_CONTENTS_INLINE);
 		void end_renderpass();
 
+		void bind_pipeline( VkPipelineBindPoint bind_point, VkPipeline pipeline );
+
+		void draw( uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0 );
+
 		VkCommandBuffer get()
 		{
 			return m_commandbuffer;
@@ -29,6 +33,6 @@ namespace pxdvk
 		}
 
 	private:
-		VkCommandBuffer m_commandbuffer;
+		VkCommandBuffer m_commandbuffer = VK_NULL_HANDLE;
 	};
 }

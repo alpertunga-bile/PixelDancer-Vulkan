@@ -148,7 +148,9 @@
     <ClCompile Include="source\framebuffer.cpp" />
     <ClCompile Include="source\image.cpp" />
     <ClCompile Include="source\nexus.cpp" />
+    <ClCompile Include="source\pipeline.cpp" />
     <ClCompile Include="source\renderpass.cpp" />
+    <ClCompile Include="source\shader.cpp" />
     <ClCompile Include="source\swapchain.cpp" />
     <ClCompile Include="source\synchronize.cpp" />
   </ItemGroup>
@@ -160,9 +162,15 @@
     <ClInclude Include="source\framebuffer.h" />
     <ClInclude Include="source\image.h" />
     <ClInclude Include="source\nexus.h" />
+    <ClInclude Include="source\pipeline.h" />
     <ClInclude Include="source\renderpass.h" />
+    <ClInclude Include="source\shader.h" />
     <ClInclude Include="source\swapchain.h" />
     <ClInclude Include="source\synchronize.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\triangle.frag" />
+    <None Include="shaders\triangle.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
