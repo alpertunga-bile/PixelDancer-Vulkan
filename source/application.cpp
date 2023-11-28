@@ -93,25 +93,28 @@ namespace pxdvk
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK CommandPool
 
-		PxdCommandPoolInfo pool_info = {};
-		pool_info.device = m_nexus;
-		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		pool_info.queue_family = m_graphics_queue.family_index;
+		for ( int i = 0; i < FRAME_OVERLAP; i++ )
+		{
+			PxdCommandPoolInfo pool_info = {};
+			pool_info.device = m_nexus;
+			pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			pool_info.queue_family = m_graphics_queue.family_index;
 
-		m_commandpool.init( pool_info );
+			m_frames [ i ].commandpool.init( pool_info );
 
-		// ---------------------------------------------------------------------------------------------------------------------
-		// PXDVK CommandBuffer
+			// ---------------------------------------------------------------------------------------------------------------------
+			// PXDVK CommandBuffer
 
-		std::vector<PxdCommandBufferInfo> cmdbuffer_infos;
+			std::vector<PxdCommandBufferInfo> cmdbuffer_infos;
 
-		PxdCommandBufferInfo main_cmd_info = {};
-		main_cmd_info.name = main_commandbuffer_name;
-		main_cmd_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		
-		cmdbuffer_infos.push_back( main_cmd_info );
+			PxdCommandBufferInfo main_cmd_info = {};
+			main_cmd_info.name = m_frames[i].commandbuffer_name;
+			main_cmd_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-		m_commandpool.allocate( cmdbuffer_infos );
+			cmdbuffer_infos.push_back( main_cmd_info );
+
+			m_frames [ i ].commandpool.allocate( cmdbuffer_infos );
+		}
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Renderpass
@@ -133,17 +136,20 @@ namespace pxdvk
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Synchronization
 
-		m_render_semaphore.init( m_nexus );
-		m_present_semaphore.init( m_nexus );
-		m_render_fence.init( m_nexus, VK_FENCE_CREATE_SIGNALED_BIT );
+		for ( int i = 0; i < FRAME_OVERLAP; i++ )
+		{
+			m_frames [ i ].render_semaphore.init( m_nexus );
+			m_frames [ i ].present_semaphore.init( m_nexus );
+			m_frames [ i ].render_fence.init( m_nexus, VK_FENCE_CREATE_SIGNALED_BIT );
+		}
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Pipeline
 		triangle_mesh.init( 3 );
 
-		triangle_mesh[ 0 ].pos = { 1.f, 1.f, 0.0f };
-		triangle_mesh[ 1 ].pos = { -1.f, 1.f, 0.0f };
-		triangle_mesh[ 2 ].pos = { 0.f,-1.f, 0.0f };
+		triangle_mesh[ 0 ].pos = {  1.f,  1.f, 0.0f };
+		triangle_mesh[ 1 ].pos = { -1.f,  1.f, 0.0f };
+		triangle_mesh[ 2 ].pos = {  0.f, -1.f, 0.0f };
 
 		triangle_mesh [ 0 ].color = { 1.0f, 1.0f, 1.0f };
 		triangle_mesh [ 1 ].color = { 1.0f, 1.0f, 1.0f };
@@ -154,6 +160,13 @@ namespace pxdvk
 		std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
 		std::vector<VkPushConstantRange> push_constant_ranges;
 		std::vector<VkPipelineColorBlendAttachmentState> color_blend_states;
+
+		VkPushConstantRange push_constant = {};
+		push_constant.offset = 0;
+		push_constant.size = sizeof( MeshPushConstants );
+		push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+		push_constant_ranges.push_back( push_constant );
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 		colorBlendAttachment.colorWriteMask = 
@@ -197,15 +210,19 @@ namespace pxdvk
 		fragment_shader.destroy();
 	}
 
-	void Application::render( uint32_t frame_number )
+	void Application::render()
 	{
-		m_render_fence.wait();
-		m_render_fence.reset();
+		FrameData frame = get_current_frame();
 
-		uint32_t swapchain_image_index = m_swapchain.get_image_index(1, m_present_semaphore.get());
+		frame.render_fence.wait();
+		frame.render_fence.reset();
 
-		m_commandpool [main_commandbuffer_name].reset();
-		m_commandpool [main_commandbuffer_name].begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
+		uint32_t swapchain_image_index = m_swapchain.get_image_index(1, frame.present_semaphore.get());
+
+		CommandBuffer cmd = frame.commandpool [ frame.commandbuffer_name ];
+
+		cmd.reset();
+		cmd.begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
 		VkClearValue clear_value;
 		float flash = std::abs( std::sin( frame_number / 360.0f ) );
@@ -223,40 +240,65 @@ namespace pxdvk
 		rpbi.clearValueCount = 1;
 		rpbi.pClearValues = &clear_value;
 
-		m_commandpool[main_commandbuffer_name].begin_renderpass(&rpbi);
+		cmd.begin_renderpass(&rpbi);
 
-		m_commandpool [ main_commandbuffer_name ].bind_pipeline( VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.get() );
+		cmd.bind_pipeline( VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.get() );
 		
-		triangle_mesh.draw( m_commandpool [ main_commandbuffer_name ].get() );
+		glm::vec3 camPos = { 0.f, 0.f, -2.f };
 
-		m_commandpool[main_commandbuffer_name].end_renderpass();
+		glm::mat4 view = glm::translate( glm::mat4( 1.f ), camPos );
+		//camera projection
+		glm::mat4 projection = glm::perspective( glm::radians( 70.f ), 1700.f / 900.f, 0.1f, 200.0f );
+		projection [ 1 ][ 1 ] *= -1;
+		//model rotation
+		glm::mat4 model = glm::mat4( 1.0f );
+		model = glm::rotate( model, glm::radians( frame_number * 0.4f ), glm::vec3( 0, 1, 0 ) );
 
-		m_commandpool[main_commandbuffer_name].end_recording();
+		//calculate final mesh matrix
+		glm::mat4 mesh_matrix = projection * view * model;
+
+		MeshPushConstants constants;
+		constants.render_matrix = mesh_matrix;
+
+		vkCmdPushConstants( cmd.get(), m_pipeline_layout.get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( MeshPushConstants ), &constants );
+
+		triangle_mesh.draw( cmd.get(), constants, m_pipeline_layout.get() );
+
+		cmd.end_renderpass();
+
+		cmd.end_recording();
 
 		PxdQueueSubmitInfo pqsi = {};
 		pqsi.stage_flag = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		pqsi.wait_semaphores.push_back(m_present_semaphore.get());
-		pqsi.signal_semaphores.push_back(m_render_semaphore.get());
-		pqsi.commandbuffers.push_back(m_commandpool[main_commandbuffer_name].get());
-		pqsi.fence = m_render_fence.get();
+		pqsi.wait_semaphores.push_back(frame.present_semaphore.get());
+		pqsi.signal_semaphores.push_back(frame.render_semaphore.get());
+		pqsi.commandbuffers.push_back(cmd.get());
+		pqsi.fence = frame.render_fence.get();
 
 		m_graphics_queue.submit(pqsi);
 
 		PxdQueuePresentInfo pqpi = {};
 		pqpi.swapchains.push_back(m_swapchain);
-		pqpi.wait_semaphores.push_back(m_render_semaphore.get());
+		pqpi.wait_semaphores.push_back(frame.render_semaphore.get());
 		pqpi.swapchain_image_index = swapchain_image_index;
 
 		m_graphics_queue.present(pqpi);
+
+		frame_number++;
 	}
 
 	void Application::destroy()
 	{
 		vkDeviceWaitIdle( m_nexus );
 
-		m_render_fence.destroy();
-		m_present_semaphore.destroy();
-		m_render_semaphore.destroy();
+		for ( int i = 0; i < FRAME_OVERLAP; i++ )
+		{
+			m_frames [ i ].render_fence.destroy();
+			m_frames [ i ].present_semaphore.destroy();
+			m_frames [ i ].render_semaphore.destroy();
+
+			m_frames [ i ].commandpool.destroy();
+		}
 
 		triangle_mesh.destroy();
 
@@ -264,7 +306,6 @@ namespace pxdvk
 		m_pipeline.destroy();
 
 		m_renderpass.destroy();
-		m_commandpool.destroy();
 		m_swapchain.destroy();
 		m_nexus.destroy();
 	}

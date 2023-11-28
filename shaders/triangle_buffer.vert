@@ -6,8 +6,14 @@ layout (location = 2) in vec3 v_color;
 
 layout (location = 0) out vec3 f_color;
 
+layout (push_constant) uniform constants
+{
+    vec4 data;
+    mat4 render_matrix;
+} PushConstants;
+
 void main()
 {
     f_color = v_color;
-    gl_Position = vec4(v_pos, 1.0f);
+    gl_Position = PushConstants.render_matrix * vec4(v_pos, 1.0f);
 }

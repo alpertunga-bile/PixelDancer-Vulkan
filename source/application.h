@@ -12,6 +12,8 @@
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
+#define FRAME_OVERLAP 3
+
 namespace pxdvk
 {
 	enum class PxdAppType
@@ -23,10 +25,26 @@ namespace pxdvk
 
 	class Application
 	{
+	private:
+		struct FrameData
+		{
+			Semaphore present_semaphore, render_semaphore;
+			Fence render_fence;
+
+			CommandPool commandpool;
+			std::string commandbuffer_name = "main";
+		};
+
 	public:
 		void initialize(GLFWwindow* window, PxdAppType app_type);
-		void render( uint32_t frame_number );
+		void render();
 		void destroy();
+
+	private:
+		inline FrameData& get_current_frame()
+		{
+			return m_frames [ frame_number % FRAME_OVERLAP ];
+		}
 
 	protected:
 		Nexus m_nexus;
@@ -35,18 +53,16 @@ namespace pxdvk
 
 		Swapchain m_swapchain;
 
-		CommandPool m_commandpool;
-		std::string main_commandbuffer_name = "main";
-
 		Renderpass m_renderpass;
-
-		Semaphore m_render_semaphore;
-		Semaphore m_present_semaphore;
-		Fence m_render_fence;
 
 		Pipeline m_pipeline;
 		PipelineLayout m_pipeline_layout;
 
 		Mesh triangle_mesh;
+
+		FrameData m_frames [ FRAME_OVERLAP ];
+
+	private:
+		uint32_t frame_number = 0;
 	};
 }

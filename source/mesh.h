@@ -1,8 +1,9 @@
 #pragma once
 
 #include "buffer.h"
+#include "pipeline.h"
 
-#include "glm/vec3.hpp"
+#include "glm/gtx/transform.hpp"
 
 #include <vector>
 
@@ -14,6 +15,12 @@ namespace pxdvk
 		std::vector<VkVertexInputAttributeDescription> attributes;
 
 		VkPipelineVertexInputStateCreateFlags flags = 0;
+	};
+
+	struct MeshPushConstants
+	{
+		glm::mat4 data;
+		glm::mat4 render_matrix;
 	};
 
 	class Mesh
@@ -33,7 +40,7 @@ namespace pxdvk
 
 		void upload(VmaAllocator allocator);
 
-		void draw(VkCommandBuffer cmd);
+		void draw(VkCommandBuffer cmd, MeshPushConstants& push_constant, VkPipelineLayout pipe_layout);
 
 		static VertexInputDescription get_input_desc();
 

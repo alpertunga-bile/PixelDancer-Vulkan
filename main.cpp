@@ -19,18 +19,14 @@ int main()
 	pxdvk::Application app;
 	app.initialize( window, pxdvk::PxdAppType::PXD_AT_RASTERIZER );
 
-	int frame_number = 0;
-
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Window
 
 	while ( !glfwWindowShouldClose(window) )
 	{
-		app.render( frame_number );
+		app.render();
 
 		glfwPollEvents();
-
-		frame_number++;
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------------
