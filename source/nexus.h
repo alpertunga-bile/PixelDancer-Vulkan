@@ -6,6 +6,8 @@
 #include <functional>
 #include <unordered_map>
 
+#include "vma/vk_mem_alloc.h"
+
 namespace pxdvk
 {
 	struct PxdQueueInfo
@@ -133,6 +135,11 @@ namespace pxdvk
 			return &m_surface;
 		}
 
+		inline VmaAllocator get_allocator()
+		{
+			return m_allocator;
+		}
+
 	private:
 		void init_instance(const char* app_name, uint32_t api_version );
 		void init_debugs();
@@ -164,6 +171,7 @@ namespace pxdvk
 
 		// Instance
 		VkInstance m_instance = VK_NULL_HANDLE;
+		VmaAllocator m_allocator = VK_NULL_HANDLE;
 
 		// Debug
 		VkDebugUtilsMessengerEXT m_messenger = VK_NULL_HANDLE;

@@ -12,12 +12,6 @@ namespace pxdvk
 	{
 		m_device = device;
 
-		LOG_INFO(
-			std::format(
-				"Converting {} to SPIRV", shader_path
-			).c_str()
-		);
-
 		std::string spirv_path;
 
 		create_spirv_shader( shader_path, spirv_path );

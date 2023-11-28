@@ -1,5 +1,8 @@
 #include "nexus.h"
 
+#define VMA_IMPLEMENTATION
+#include "vma/vk_mem_alloc.h"
+
 namespace pxdvk
 {
 	void Nexus::init( PxdNexusCreateInfo create_info )
@@ -15,6 +18,12 @@ namespace pxdvk
 		
 		init_device( create_info.device_features );
 		init_queues();
+
+		VmaAllocatorCreateInfo vaci = {};
+		vaci.instance = m_instance;
+		vaci.physicalDevice = m_physical_device;
+		vaci.device = m_device;
+		vmaCreateAllocator( &vaci, &m_allocator );
 	}
 
 	void Nexus::destroy()
@@ -48,6 +57,8 @@ namespace pxdvk
 #endif
 
 		vkDestroyInstance( m_instance, nullptr );
+
+		vmaDestroyAllocator( m_allocator );
 	}
 
 	void Nexus::add_instance_extension( const char* ext )

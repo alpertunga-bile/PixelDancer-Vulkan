@@ -7,6 +7,7 @@
 #include "framebuffer.h"
 #include "synchronize.h"
 #include "pipeline.h"
+#include "mesh.h"
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
@@ -45,5 +46,7 @@ namespace pxdvk
 
 		Pipeline m_pipeline;
 		PipelineLayout m_pipeline_layout;
+
+		Mesh triangle_mesh;
 	};
 }

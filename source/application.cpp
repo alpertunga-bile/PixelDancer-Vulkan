@@ -139,11 +139,20 @@ namespace pxdvk
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Pipeline
+		triangle_mesh.init( 3 );
+
+		triangle_mesh[ 0 ].pos = { 1.f, 1.f, 0.0f };
+		triangle_mesh[ 1 ].pos = { -1.f, 1.f, 0.0f };
+		triangle_mesh[ 2 ].pos = { 0.f,-1.f, 0.0f };
+
+		triangle_mesh [ 0 ].color = { 1.0f, 1.0f, 1.0f };
+		triangle_mesh [ 1 ].color = { 1.0f, 1.0f, 1.0f };
+		triangle_mesh [ 2 ].color = { 1.0f, 1.0f, 1.0f };
+
+		triangle_mesh.upload( m_nexus.get_allocator() );
 
 		std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
 		std::vector<VkPushConstantRange> push_constant_ranges;
-		std::vector<VkVertexInputAttributeDescription> input_attributes;
-		std::vector<VkVertexInputBindingDescription> binding_description;
 		std::vector<VkPipelineColorBlendAttachmentState> color_blend_states;
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
@@ -166,14 +175,16 @@ namespace pxdvk
 		m_pipeline.set_scissor( 0, 1, width, height );
 
 		Shader vertex_shader;
-		vertex_shader.init( m_nexus, "shaders/triangle.vert" );
+		vertex_shader.init( m_nexus, "shaders/triangle_buffer.vert" );
 
 		Shader fragment_shader;
-		fragment_shader.init( m_nexus, "shaders/triangle.frag" );
+		fragment_shader.init( m_nexus, "shaders/triangle_buffer.frag" );
+
+		VertexInputDescription input_desc = triangle_mesh.get_input_desc();
 
 		m_pipeline.add_shader( VK_SHADER_STAGE_VERTEX_BIT, vertex_shader.get() );
 		m_pipeline.add_shader( VK_SHADER_STAGE_FRAGMENT_BIT, fragment_shader.get() );
-		m_pipeline.create_vertex_input( binding_description, input_attributes );
+		m_pipeline.create_vertex_input( input_desc.bindings, input_desc.attributes );
 		m_pipeline.create_assembly_info( VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
 		m_pipeline.create_viewport_state();
 		m_pipeline.create_rasterization( VK_POLYGON_MODE_FILL );
@@ -215,7 +226,8 @@ namespace pxdvk
 		m_commandpool[main_commandbuffer_name].begin_renderpass(&rpbi);
 
 		m_commandpool [ main_commandbuffer_name ].bind_pipeline( VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.get() );
-		m_commandpool [ main_commandbuffer_name ].draw( 3 );
+		
+		triangle_mesh.draw( m_commandpool [ main_commandbuffer_name ].get() );
 
 		m_commandpool[main_commandbuffer_name].end_renderpass();
 
@@ -245,6 +257,8 @@ namespace pxdvk
 		m_render_fence.destroy();
 		m_present_semaphore.destroy();
 		m_render_semaphore.destroy();
+
+		triangle_mesh.destroy();
 
 		m_pipeline_layout.destroy();
 		m_pipeline.destroy();

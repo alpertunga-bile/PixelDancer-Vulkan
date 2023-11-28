@@ -143,10 +143,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\application.cpp" />
+    <ClCompile Include="source\buffer.cpp" />
     <ClCompile Include="source\commandbuffer.cpp" />
     <ClCompile Include="source\commandpool.cpp" />
     <ClCompile Include="source\framebuffer.cpp" />
     <ClCompile Include="source\image.cpp" />
+    <ClCompile Include="SOURCE\mesh.cpp" />
     <ClCompile Include="source\nexus.cpp" />
     <ClCompile Include="source\pipeline.cpp" />
     <ClCompile Include="source\renderpass.cpp" />
@@ -156,11 +158,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application.h" />
+    <ClInclude Include="source\buffer.h" />
     <ClInclude Include="source\commandbuffer.h" />
     <ClInclude Include="source\commandpool.h" />
     <ClInclude Include="source\debug.h" />
     <ClInclude Include="source\framebuffer.h" />
     <ClInclude Include="source\image.h" />
+    <ClInclude Include="source\mesh.h" />
     <ClInclude Include="source\nexus.h" />
     <ClInclude Include="source\pipeline.h" />
     <ClInclude Include="source\renderpass.h" />
