@@ -145,6 +145,7 @@ namespace pxdvk
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// PXDVK Pipeline
+		/*
 		triangle_mesh.init( 3 );
 
 		triangle_mesh[ 0 ].pos = {  1.f,  1.f, 0.0f };
@@ -156,17 +157,20 @@ namespace pxdvk
 		triangle_mesh [ 2 ].color = { 1.0f, 1.0f, 1.0f };
 
 		triangle_mesh.upload( m_nexus.get_allocator() );
+		*/
 
 		std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
 		std::vector<VkPushConstantRange> push_constant_ranges;
 		std::vector<VkPipelineColorBlendAttachmentState> color_blend_states;
 
+		/*
 		VkPushConstantRange push_constant = {};
 		push_constant.offset = 0;
 		push_constant.size = sizeof( MeshPushConstants );
 		push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 		push_constant_ranges.push_back( push_constant );
+		*/
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 		colorBlendAttachment.colorWriteMask = 
@@ -188,12 +192,12 @@ namespace pxdvk
 		m_pipeline.set_scissor( 0, 1, width, height );
 
 		Shader vertex_shader;
-		vertex_shader.init( m_nexus, "shaders/triangle_buffer.vert" );
+		vertex_shader.init( m_nexus, "shaders/triangle.vert" );
 
 		Shader fragment_shader;
-		fragment_shader.init( m_nexus, "shaders/triangle_buffer.frag" );
+		fragment_shader.init( m_nexus, "shaders/triangle.frag" );
 
-		VertexInputDescription input_desc = triangle_mesh.get_input_desc();
+		VertexInputDescription input_desc;
 
 		m_pipeline.add_shader( VK_SHADER_STAGE_VERTEX_BIT, vertex_shader.get() );
 		m_pipeline.add_shader( VK_SHADER_STAGE_FRAGMENT_BIT, fragment_shader.get() );
@@ -224,9 +228,10 @@ namespace pxdvk
 		cmd.reset();
 		cmd.begin_recording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
-		VkClearValue clear_value;
-		float flash = std::abs( std::sin( frame_number / 360.0f ) );
-		clear_value.color = { {0.0f, 0.0f, flash, 1.0f} };
+		VkClearValue clear_values[2];
+		float flash = std::abs( std::sin( frame_number / 120.0f ) );
+		clear_values [ 0 ].color = { {0.0f, 0.0f, flash, 1.0f} };
+		clear_values [ 1 ].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo rpbi = {};
 		rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -237,8 +242,8 @@ namespace pxdvk
 		rpbi.renderArea.extent = { .width = 1280, .height = 720 };
 		rpbi.framebuffer = m_swapchain.get_framebuffer(swapchain_image_index);
 
-		rpbi.clearValueCount = 1;
-		rpbi.pClearValues = &clear_value;
+		rpbi.clearValueCount = 2;
+		rpbi.pClearValues = clear_values;
 
 		cmd.begin_renderpass(&rpbi);
 
@@ -257,12 +262,14 @@ namespace pxdvk
 		//calculate final mesh matrix
 		glm::mat4 mesh_matrix = projection * view * model;
 
+		cmd.draw( 3 );
+
+		/*
 		MeshPushConstants constants;
 		constants.render_matrix = mesh_matrix;
 
-		vkCmdPushConstants( cmd.get(), m_pipeline_layout.get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( MeshPushConstants ), &constants );
-
 		triangle_mesh.draw( cmd.get(), constants, m_pipeline_layout.get() );
+		*/
 
 		cmd.end_renderpass();
 
@@ -300,7 +307,7 @@ namespace pxdvk
 			m_frames [ i ].commandpool.destroy();
 		}
 
-		triangle_mesh.destroy();
+		// triangle_mesh.destroy();
 
 		m_pipeline_layout.destroy();
 		m_pipeline.destroy();

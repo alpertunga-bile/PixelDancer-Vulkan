@@ -109,3 +109,17 @@ VulkanDebugReportCallback(
 
 	return VK_FALSE;
 }
+
+inline void set_object_name( VkDevice device, uint64_t object, VkObjectType obj_type, const char* name )
+{
+	VkDebugUtilsObjectNameInfoEXT name_info = {};
+	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+	name_info.pNext = nullptr;
+	name_info.objectType = obj_type;
+	name_info.objectHandle = object;
+	name_info.pObjectName = name;
+
+	VK_CHECK(
+		vkSetDebugUtilsObjectNameEXT( device, &name_info )
+	);
+}

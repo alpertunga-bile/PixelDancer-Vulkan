@@ -33,7 +33,7 @@ namespace pxdvk
 		std::vector<VkSemaphore> wait_semaphores;
 		std::vector<VkSemaphore> signal_semaphores;
 		std::vector<VkCommandBuffer> commandbuffers;
-		VkFence fence;
+		VkFence fence = VK_NULL_HANDLE;
 	};
 
 	struct PxdQueuePresentInfo

@@ -29,6 +29,11 @@ namespace pxdvk
 
 		void destroy();
 
+		void free_commandbuffer( std::string buffer_name )
+		{
+			vkFreeCommandBuffers( m_device, m_commandpool, 1, m_commandbuffer_map [ buffer_name ].get_ptr() );
+		}
+
 		CommandBuffer operator[]( std::string buffer_name )
 		{
 			return m_commandbuffer_map [ buffer_name ];

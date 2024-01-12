@@ -44,7 +44,7 @@ namespace pxdvk
 		VkDeviceSize offset = 0;
 		vkCmdBindVertexBuffers( cmd, 0, 1, m_vertex_buffer.get_ptr(), &offset );
 
-		// vkCmdPushConstants( cmd, pipe_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( MeshPushConstants ), &push_constant );
+		vkCmdPushConstants( cmd, pipe_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( MeshPushConstants ), &push_constant );
 
 		vkCmdDraw( cmd, m_vertices_size, 1, 0, 0 );
 	}
